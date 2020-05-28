@@ -1,3 +1,4 @@
+const path = require('path')
 const multiparty = require('multiparty')
 
 const defaultDecoratorKeys = {
@@ -6,6 +7,7 @@ const defaultDecoratorKeys = {
 
 function plugin (felid, options = {}) {
   const rootOptions = {
+    uploadDir: path.resolve('./'),
     ...options
   }
   const decoratorKeys = {
