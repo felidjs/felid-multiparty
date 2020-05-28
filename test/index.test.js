@@ -58,6 +58,26 @@ describe('upload files', () => {
         done()
       })
   })
+
+  test('Should handle form fields correctly', (done) => {
+    const instance = new Felid()
+    instance.plugin(multiparty)
+    instance.post('/upload', async (req, res) => {
+      const { fields } = await req.upload()
+      res.send(fields.foo[0])
+    })
+
+    injectar(instance.lookup(), formAutoContent({
+      [FIELD]: ORIGIN_FILE_NAMES.map(file => fs.createReadStream(path.resolve(__dirname, file))),
+      foo: 'bar'
+    }))
+      .post('/upload')
+      .end((err, res) => {
+        expect(err).toBe(null)
+        expect(res.payload).toBe('bar')
+        done()
+      })
+  })
 })
 
 describe('options', () => {
