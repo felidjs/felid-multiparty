@@ -9,6 +9,12 @@ const FIELD = 'file'
 const ORIGIN_FILE_NAMES = ['test.svg', 'test.png']
 const FILE_CONTENTS = ORIGIN_FILE_NAMES.map(fileName => fs.readFileSync(path.resolve(__dirname, fileName)).toString('utf8'))
 
+const uploadFiles = []
+
+afterAll(() => {
+  return clearUploadFiles()
+})
+
 describe('upload files', () => {
   test('Should upload single file', (done) => {
     const instance = new Felid()
@@ -16,6 +22,7 @@ describe('upload files', () => {
     instance.post('/upload', async (req, res) => {
       const { files } = await req.upload()
       const file = files[FIELD][0]
+      uploadFiles.push(file.path)
       res.send({
         originalFilename: file.originalFilename,
         path: file.path
@@ -40,9 +47,11 @@ describe('upload files', () => {
     instance.plugin(multiparty)
     instance.post('/upload', async (req, res) => {
       const { files } = await req.upload()
+      const paths = files[FIELD].map(file => file.path)
+      uploadFiles.push(...paths)
       res.send({
         originalFilenames: files[FIELD].map(file => file.originalFilename),
-        paths: files[FIELD].map(file => file.path)
+        paths
       })
     })
 
@@ -63,12 +72,13 @@ describe('upload files', () => {
     const instance = new Felid()
     instance.plugin(multiparty)
     instance.post('/upload', async (req, res) => {
-      const { fields } = await req.upload()
+      const { fields, files } = await req.upload()
+      uploadFiles.push(files[FIELD][0].path)
       res.send(fields.foo[0])
     })
 
     injectar(instance.lookup(), formAutoContent({
-      [FIELD]: ORIGIN_FILE_NAMES.map(file => fs.createReadStream(path.resolve(__dirname, file))),
+      [FIELD]: fs.createReadStream(path.resolve(__dirname, ORIGIN_FILE_NAMES[0])),
       foo: 'bar'
     }))
       .post('/upload')
@@ -89,7 +99,9 @@ describe('options', () => {
     instance.post('/upload', async (req, res) => {
       const { files } = await req.upload()
       const file = files[FIELD][0]
-      fs.renameSync(file.path, path.resolve(__dirname, 'upload', file.originalFilename))
+      const newPath = path.resolve(__dirname, 'upload', file.originalFilename)
+      fs.renameSync(file.path, newPath)
+      uploadFiles.push(newPath)
       res.send(file.originalFilename)
     })
 
@@ -114,6 +126,7 @@ describe('options', () => {
     instance.post('/upload', async (req, res) => {
       const { files } = await req.multiparty()
       const file = files[FIELD][0]
+      uploadFiles.push(file.path)
       res.send({
         originalFilename: file.originalFilename,
         path: file.path
@@ -133,3 +146,7 @@ describe('options', () => {
       })
   })
 })
+
+function clearUploadFiles () {
+  uploadFiles.forEach(file => fs.unlinkSync(file))
+}
