@@ -1,6 +1,9 @@
 # felid-multiparty
 
-[![npm version](https://img.shields.io/npm/v/felid-multiparty.svg)](https://www.npmjs.com/package/felid-multiparty) [![Build Status](https://travis-ci.com/felidjs/felid-multiparty.svg?branch=master)](https://travis-ci.com/felidjs/felid-multiparty) [![JavaScript Style Guide](https://img.shields.io/badge/code_style-standard-brightgreen.svg)](https://standardjs.com)
+[![npm version](https://img.shields.io/npm/v/felid-multiparty.svg)](https://www.npmjs.com/package/felid-multiparty)
+![Node.js CI](https://github.com/felidjs/felid-multiparty/workflows/Node.js%20CI/badge.svg)
+[![JavaScript Style Guide](https://img.shields.io/badge/code_style-standard-brightgreen.svg)](https://standardjs.com)
+[![codecov](https://codecov.io/gh/felidjs/felid-multiparty/branch/master/graph/badge.svg)](https://codecov.io/gh/felidjs/felid-multiparty)
 
 Multiparty plugin for [Felid](https://github.com/felidjs/felid). Upload files without caring.
 
@@ -27,7 +30,8 @@ app.plugin(multiparty, options)
 
 app.post('/upload', async (req, res) => {
   const { files } = await req.upload()
-  const file = files[FIELD][0]
+  // Supposed you uploaded the file as in a field named 'file'
+  const file = files.file[0]
   res.send({
     originalFilename: file.originalFilename,
     path: file.path
