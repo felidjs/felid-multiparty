@@ -120,7 +120,7 @@ describe('upload files', () => {
       .end((err, res) => {
         const payload = JSON.parse(res.payload)
         expect(err).toBe(null)
-        expect(fs.readFileSync(path.resolve(__dirname, '..', payload.path.split('/').pop())).toString('utf8')).toBe(FILE_CONTENTS[0])
+        expect(fs.readFileSync(path.resolve(__dirname, '..', path.basename(payload.path))).toString('utf8')).toBe(FILE_CONTENTS[0])
         if (++uploadCount === 2) {
           done()
         }
@@ -132,7 +132,7 @@ describe('upload files', () => {
       .end((err, res) => {
         const payload = JSON.parse(res.payload)
         expect(err).toBe(null)
-        expect(fs.readFileSync(path.resolve(__dirname, 'upload', payload.path.split('/').pop())).toString('utf8')).toBe(FILE_CONTENTS[0])
+        expect(fs.readFileSync(path.resolve(__dirname, 'upload', path.basename(payload.path))).toString('utf8')).toBe(FILE_CONTENTS[0])
         if (++uploadCount === 2) {
           done()
         }
@@ -163,7 +163,7 @@ describe('options', () => {
       .end((err, res) => {
         const payload = JSON.parse(res.payload)
         expect(err).toBe(null)
-        expect(fs.readFileSync(path.resolve(__dirname, 'upload', payload.path.split('/').pop())).toString('utf8')).toBe(FILE_CONTENTS[0])
+        expect(fs.readFileSync(path.resolve(__dirname, 'upload', path.basename(payload.path))).toString('utf8')).toBe(FILE_CONTENTS[0])
         done()
       })
   })
