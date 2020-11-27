@@ -11,9 +11,7 @@ const FILE_CONTENTS = ORIGIN_FILE_NAMES.map(fileName => fs.readFileSync(path.res
 
 const uploadFiles = []
 
-afterAll(() => {
-  return clearUploadFiles()
-})
+afterAll(clearUploadFiles)
 
 describe('upload files', () => {
   test('Should upload single file', (done) => {
@@ -88,6 +86,58 @@ describe('upload files', () => {
         done()
       })
   })
+
+  test('Should override global options', (done) => {
+    let uploadCount = 0
+
+    const instance = new Felid()
+    instance.plugin(multiparty)
+    instance.post('/upload', async (req, res) => {
+      const { files } = await req.upload()
+      const file = files[FIELD][0]
+      uploadFiles.push(file.path)
+      res.send({
+        originalFilename: file.originalFilename,
+        path: file.path
+      })
+    })
+    instance.post('/upload-override', async (req, res) => {
+      const { files } = await req.upload({
+        uploadDir: path.resolve(__dirname, 'upload')
+      })
+      const file = files[FIELD][0]
+      uploadFiles.push(file.path)
+      res.send({
+        originalFilename: file.originalFilename,
+        path: file.path
+      })
+    })
+
+    injectar(instance.lookup(), formAutoContent({
+      [FIELD]: fs.createReadStream(path.resolve(__dirname, ORIGIN_FILE_NAMES[0]))
+    }))
+      .post('/upload')
+      .end((err, res) => {
+        const payload = JSON.parse(res.payload)
+        expect(err).toBe(null)
+        expect(fs.readFileSync(path.resolve(__dirname, '..', payload.path.split('/').pop())).toString('utf8')).toBe(FILE_CONTENTS[0])
+        if (++uploadCount === 2) {
+          done()
+        }
+      })
+    injectar(instance.lookup(), formAutoContent({
+      [FIELD]: fs.createReadStream(path.resolve(__dirname, ORIGIN_FILE_NAMES[0]))
+    }))
+      .post('/upload-override')
+      .end((err, res) => {
+        const payload = JSON.parse(res.payload)
+        expect(err).toBe(null)
+        expect(fs.readFileSync(path.resolve(__dirname, 'upload', payload.path.split('/').pop())).toString('utf8')).toBe(FILE_CONTENTS[0])
+        if (++uploadCount === 2) {
+          done()
+        }
+      })
+  })
 })
 
 describe('options', () => {
@@ -99,10 +149,11 @@ describe('options', () => {
     instance.post('/upload', async (req, res) => {
       const { files } = await req.upload()
       const file = files[FIELD][0]
-      const newPath = path.resolve(__dirname, 'upload', file.originalFilename)
-      fs.renameSync(file.path, newPath)
-      uploadFiles.push(newPath)
-      res.send(file.originalFilename)
+      uploadFiles.push(file.path)
+      res.send({
+        originalFilename: file.originalFilename,
+        path: file.path
+      })
     })
 
     injectar(instance.lookup(), formAutoContent({
@@ -110,8 +161,9 @@ describe('options', () => {
     }))
       .post('/upload')
       .end((err, res) => {
+        const payload = JSON.parse(res.payload)
         expect(err).toBe(null)
-        expect(fs.readFileSync(path.resolve(__dirname, 'upload', res.payload)).toString('utf8')).toBe(FILE_CONTENTS[0])
+        expect(fs.readFileSync(path.resolve(__dirname, 'upload', payload.path.split('/').pop())).toString('utf8')).toBe(FILE_CONTENTS[0])
         done()
       })
   })
