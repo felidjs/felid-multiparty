@@ -41,6 +41,13 @@
     "snazzy": "^8.0.0",
     "standard": "^14.3.4"
   },
+  "engines": {
+    "node": ">= 10.0"
+  },
+  "jest": {
+    "coverageDirectory": "./coverage/",
+    "collectCoverage": true
+  },
   "standard": {
     "env": [
       "jest"
