@@ -1,6 +1,6 @@
 {
   "name": "felid-multiparty",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Multiparty plugin for Felid.js",
   "main": "src/index.js",
   "files": [
