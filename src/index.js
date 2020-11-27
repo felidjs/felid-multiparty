@@ -7,7 +7,7 @@ const defaultDecoratorKeys = {
 
 function plugin (felid, options = {}) {
   const rootOptions = {
-    uploadDir: path.resolve('./'),
+    uploadDir: path.resolve('.'),
     ...options
   }
   const decoratorKeys = {
@@ -15,16 +15,14 @@ function plugin (felid, options = {}) {
     ...options.decorator
   }
   felid.addParser('multipart', req => false)
-  felid.decorateRequest(decoratorKeys.upload, upload)
+  felid.decorateRequest(decoratorKeys.upload, () => upload)
 
   function upload (opt) {
-    const rawRequest = this.req
-    const form = new multiparty.Form({
-      ...rootOptions,
-      ...opt
-    })
     return new Promise((resolve, reject) => {
-      form.parse(rawRequest, (err, fields, files) => {
+      new multiparty.Form({
+        ...rootOptions,
+        ...opt
+      }).parse(this.req, (err, fields, files) => {
         if (err) {
           reject(err)
           return
