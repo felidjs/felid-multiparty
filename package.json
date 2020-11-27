@@ -30,7 +30,7 @@
   },
   "homepage": "https://github.com/felidjs/felid-multiparty#readme",
   "dependencies": {
-    "multiparty": "^4.2.1"
+    "multiparty": "^4.2.2"
   },
   "devDependencies": {
     "felid": "^0.1.0-alpha.3",
